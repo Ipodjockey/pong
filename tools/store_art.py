@@ -68,7 +68,7 @@ class Canvas:
 def grid(cv, horizon, s):
     img, d = cv.layer()
     w, h = cv.w, cv.h
-    col = (40, 26, 90)
+    col = (34, 20, 74)
     vx = w / 2
     for i in range(-24, 25):
         x0 = vx + i * 220 * s
@@ -86,7 +86,7 @@ def grid(cv, horizon, s):
     # sky: faint magenta haze on the horizon
     sky = np.zeros((h, w, 3), np.float32)
     dist = np.abs(ys - horizon) / (0.35 * h)
-    sky += f((60, 10, 70)) * np.exp(-dist ** 2)[..., None]
+    sky += f((34, 6, 44)) * np.exp(-(dist * 1.6) ** 2)[..., None]
     cv.base += sky
 
 
@@ -135,14 +135,15 @@ def sparks(cv, x, y, dir_deg, col, s, n=26, seed=1):
     cv.add(img, 1.6)
 
 
-def scene(w, h, inset=0.07, paddle_h=0.26, ball=(0.62, 0.42), floor=0.64, s=None, seed=1, walls=True):
+def scene(w, h, inset=0.07, paddle_h=0.26, ball=(0.62, 0.42), floor=0.64, s=None, seed=1, walls=True,
+          ly=0.58, ry=0.36, bounce_bottom=False):
     """The key-art moment: cyan just returned the ball off the top wall toward magenta."""
     s = s or h / 1080
     cv = Canvas(w, h)
     grid(cv, floor * h, s)
     pw, ph = 26 * s * 1.4, paddle_h * h
     lx, rx = inset * w, w - inset * w
-    ly, ry = h * 0.58, h * 0.36
+    ly, ry = h * ly, h * ry
     if walls:
         img, d = cv.layer()
         t = max(2, 8 * s)
@@ -150,10 +151,10 @@ def scene(w, h, inset=0.07, paddle_h=0.26, ball=(0.62, 0.42), floor=0.64, s=None
         d.rectangle((0, h - t, w, h), fill=WALL)
         cv.add(img, 0.9)
     bx, by = ball[0] * w, ball[1] * h
-    bounce = (lx + (bx - lx) * 0.42, 10 * s)
+    bounce = (lx + (bx - lx) * 0.42, h - 10 * s if bounce_bottom else 10 * s)
     bs = 26 * s * 1.4
     trail(cv, [(lx + pw, ly + ph * 0.1), bounce, (bx, by)], P1, bs)
-    sparks(cv, bounce[0], bounce[1] + 6 * s, 90, WALL, s, 18, seed)
+    sparks(cv, bounce[0], bounce[1] + (-6 if bounce_bottom else 6) * s, -90 if bounce_bottom else 90, WALL, s, 18, seed)
     sparks(cv, lx + pw, ly + ph * 0.1, 0, P1, s, 22, seed + 1)
     rect(cv, (lx - pw / 2, ly - ph / 2, lx + pw / 2, ly + ph / 2), P1)
     rect(cv, (rx - pw / 2, ry - ph / 2, rx + pw / 2, ry + ph / 2), P2)
@@ -190,7 +191,7 @@ def logo_rgba(height, glow=True, pad=0.35):
     if glow:
         g = Image.fromarray((m * 255).astype(np.uint8))
         halo = np.zeros((h, w, 3), np.float32)
-        for r, k in ((0.05, 0.9), (0.16, 0.55)):
+        for r, k in ((0.05, 1.1), (0.16, 0.7)):
             b = np.asarray(g.filter(ImageFilter.GaussianBlur(height * r)), np.float32)[..., None] / 255.0
             halo += b * grad * k
         ha = np.clip(halo.max(axis=2), 0, 1)
@@ -200,13 +201,12 @@ def logo_rgba(height, glow=True, pad=0.35):
     rgb = rgb * (1 - shadow[..., None]) + sh_col * shadow[..., None]
     a = np.maximum(a, shadow)
     # glyph face: gradient with a bright inner highlight
-    face = grad * 0.55 + 0.45
+    face = grad * 0.78 + 0.22
     rgb = rgb * (1 - m[..., None]) + face * m[..., None]
     a = np.maximum(a, m)
     # straight (unpremultiplied) alpha
     out = np.zeros((h, w, 4), np.float32)
     safe = np.maximum(a, 1e-4)[..., None]
-    out[..., :3] = np.clip(rgb / np.maximum(1, safe * 0 + 1) / safe * a[..., None], 0, 1)
     out[..., :3] = np.clip(rgb / safe, 0, 1)
     out[..., 3] = np.clip(a, 0, 1)
     return Image.fromarray((out * 255).astype(np.uint8), "RGBA")
@@ -257,9 +257,9 @@ def main():
         "header_capsule_920x430.png": (920, 430, (0.5, 0.47, 0.62, 0.56), dict(paddle_h=0.30, ball=(0.70, 0.30))),
         "small_capsule_462x174.png": (462, 174, (0.5, 0.5, 0.78, 0.86), dict(inset=0.05, paddle_h=0.40, ball=(0.80, 0.25))),
         "main_capsule_1232x706.png": (1232, 706, (0.5, 0.40, 0.56, 0.42), dict(paddle_h=0.26, ball=(0.70, 0.62))),
-        "vertical_capsule_748x896.png": (748, 896, (0.5, 0.30, 0.80, 0.30), dict(inset=0.09, paddle_h=0.20, ball=(0.66, 0.62), floor=0.70)),
+        "vertical_capsule_748x896.png": (748, 896, (0.5, 0.30, 0.80, 0.30), dict(inset=0.09, paddle_h=0.18, ball=(0.70, 0.62), floor=0.70, ly=0.74, ry=0.58, bounce_bottom=True)),
         "page_background_1438x810.png": (1438, 810, None, dict(ball=(0.66, 0.46))),
-        "library_capsule_600x900.png": (600, 900, (0.5, 0.28, 0.82, 0.28), dict(inset=0.09, paddle_h=0.18, ball=(0.66, 0.64), floor=0.72)),
+        "library_capsule_600x900.png": (600, 900, (0.5, 0.28, 0.82, 0.28), dict(inset=0.09, paddle_h=0.16, ball=(0.70, 0.62), floor=0.72, ly=0.76, ry=0.58, bounce_bottom=True)),
         "library_hero_3840x1240.png": (3840, 1240, None, dict(inset=0.05, paddle_h=0.24, ball=(0.70, 0.40))),
         "library_header_920x430.png": (920, 430, (0.5, 0.47, 0.62, 0.56), dict(paddle_h=0.30, ball=(0.70, 0.30))),
         "event_cover_800x450.png": (800, 450, (0.5, 0.45, 0.6, 0.5), dict(paddle_h=0.30, ball=(0.72, 0.30))),

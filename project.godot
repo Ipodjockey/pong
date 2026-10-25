@@ -1,0 +1,36 @@
+; Engine configuration file.
+; Godot 4.3 project for the Pong Steam release.
+
+config_version=5
+
+[application]
+
+config/name="Pong"
+run/main_scene="res://scenes/main.tscn"
+config/features=PackedStringArray("4.3", "Forward Plus")
+
+[autoload]
+
+Game="*res://scripts/game.gd"
+Audio="*res://scripts/audio.gd"
+
+[display]
+
+window/size/viewport_width=1920
+window/size/viewport_height=1080
+window/size/window_width_override=1280
+window/size/window_height_override=720
+window/stretch/mode="canvas_items"
+window/stretch/aspect="keep"
+window/vsync/vsync_mode=1
+
+[physics]
+
+common/physics_ticks_per_second=120
+common/max_physics_steps_per_frame=16
+
+[rendering]
+
+renderer/rendering_method="forward_plus"
+viewport/hdr_2d=true
+environment/defaults/default_clear_color=Color(0, 0, 0, 1)

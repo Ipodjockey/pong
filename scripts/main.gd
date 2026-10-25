@@ -57,7 +57,7 @@ func _unhandled_input(event: InputEvent) -> void:
 # --- Screens ---------------------------------------------------------------
 
 func show_title() -> void:
-	get_tree().paused = false
+	_unpause()
 	screen = Screen.TITLE
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	if Game.mode != Game.Mode.DEMO or not view.running:
@@ -103,7 +103,7 @@ func _close_options() -> void:
 
 
 func start_match(mode: Game.Mode) -> void:
-	get_tree().paused = false
+	_unpause()
 	_clear_menu()
 	screen = Screen.PLAYING
 	Input.mouse_mode = Input.MOUSE_MODE_HIDDEN
@@ -128,8 +128,14 @@ func resume() -> void:
 	_clear_menu()
 	screen = Screen.PLAYING
 	Input.mouse_mode = Input.MOUSE_MODE_HIDDEN
-	get_tree().paused = false
-	Game.paused_changed.emit(false)
+	_unpause()
+
+
+## Unpauses the tree and, if it was paused, tells listeners (audio, graphics).
+func _unpause() -> void:
+	if get_tree().paused:
+		get_tree().paused = false
+		Game.paused_changed.emit(false)
 
 
 func _on_match_finished(winner: int) -> void:

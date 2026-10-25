@@ -50,14 +50,23 @@ func load_settings() -> void:
 	var cfg := ConfigFile.new()
 	if cfg.load(SETTINGS_PATH) != OK:
 		return
-	difficulty = clampi(cfg.get_value("game", "difficulty", difficulty), 0, 2)
-	win_score = cfg.get_value("game", "win_score", win_score)
+	# Each value is type-checked so a hand-edited or corrupted file falls back
+	# to defaults per entry instead of aborting the whole load.
+	difficulty = clampi(_get_number(cfg, "game", "difficulty", difficulty), 0, 2)
+	win_score = _get_number(cfg, "game", "win_score", win_score)
 	if win_score not in WIN_SCORE_CHOICES:
 		win_score = 11
-	master_volume = clampf(cfg.get_value("audio", "master", master_volume), 0.0, 1.0)
-	music_volume = clampf(cfg.get_value("audio", "music", music_volume), 0.0, 1.0)
-	sfx_volume = clampf(cfg.get_value("audio", "sfx", sfx_volume), 0.0, 1.0)
-	fullscreen = cfg.get_value("display", "fullscreen", fullscreen)
+	master_volume = clampf(_get_number(cfg, "audio", "master", master_volume), 0.0, 1.0)
+	music_volume = clampf(_get_number(cfg, "audio", "music", music_volume), 0.0, 1.0)
+	sfx_volume = clampf(_get_number(cfg, "audio", "sfx", sfx_volume), 0.0, 1.0)
+	var fs = cfg.get_value("display", "fullscreen", fullscreen)
+	if fs is bool:
+		fullscreen = fs
+
+
+func _get_number(cfg: ConfigFile, section: String, key: String, default: float) -> float:
+	var v = cfg.get_value(section, key, default)
+	return float(v) if (v is int or v is float) and is_finite(float(v)) else default
 
 
 func save_settings() -> void:

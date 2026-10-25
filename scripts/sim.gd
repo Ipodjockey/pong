@@ -71,6 +71,8 @@ func step(inputs: Array, dt: float) -> Array[Dictionary]:
 	time += dt
 	for side in [LEFT, RIGHT]:
 		var axis := clampf(float(inputs[side]), -1.0, 1.0)
+		if is_nan(axis):
+			axis = 0.0
 		paddle_vel[side] = axis * PADDLE_SPEED
 		paddle_y[side] = clampf(paddle_y[side] + paddle_vel[side] * dt, PADDLE_H / 2.0, HEIGHT - PADDLE_H / 2.0)
 

@@ -11,7 +11,7 @@ const FONT_PATH := "res://art/font.ttf"
 
 var screen := Screen.TITLE
 var _root: Control # current menu, replaced on every screen change
-var _theme := Theme.new()
+var _theme: Theme = preload("res://scripts/vfx/ui_theme.gd").build()
 
 
 func _ready() -> void:
@@ -63,7 +63,7 @@ func show_title() -> void:
 	if Game.mode != Game.Mode.DEMO or not view.running:
 		view.start(Game.Mode.DEMO)
 	Audio.play_music("music_menu")
-	var menu := _menu("PONG", "", [
+	var menu := _menu("WONG", "", [
 		["1 Player", func(): start_match(Game.Mode.VS_CPU)],
 		["2 Players", func(): start_match(Game.Mode.VS_LOCAL)],
 		["Options", show_options],
@@ -93,6 +93,9 @@ func show_options() -> void:
 	rows.append([_cycle_text("Fullscreen", "On" if Game.fullscreen else "Off"), func(b: Button):
 		Game.toggle_fullscreen()
 		b.text = _cycle_text("Fullscreen", "On" if Game.fullscreen else "Off")])
+	rows.append([_cycle_text("Screen shake", "On" if Game.screen_shake else "Off"), func(b: Button):
+		Game.screen_shake = not Game.screen_shake
+		b.text = _cycle_text("Screen shake", "On" if Game.screen_shake else "Off")])
 	rows.append(["Back", func(_b): _close_options()])
 	_menu("OPTIONS", "", rows, true)
 
@@ -168,7 +171,7 @@ func _menu(title: String, subtitle: String, items: Array, dim_background: bool) 
 
 	if dim_background:
 		var shade := ColorRect.new()
-		shade.color = Color(0, 0, 0, 0.6)
+		shade.color = Color(0.03, 0.03, 0.06, 0.6)
 		shade.set_anchors_preset(Control.PRESET_FULL_RECT)
 		_root.add_child(shade)
 
@@ -179,7 +182,9 @@ func _menu(title: String, subtitle: String, items: Array, dim_background: bool) 
 	box.add_theme_constant_override("separation", 18)
 	center.add_child(box)
 
-	box.add_child(_label(title, 160))
+	var title_label := _label(title, 160)
+	title_label.theme_type_variation = "TitleLabel"
+	box.add_child(title_label)
 	if subtitle != "":
 		box.add_child(_label(subtitle, 72))
 	var spacer := Control.new()

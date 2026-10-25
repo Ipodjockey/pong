@@ -27,6 +27,7 @@ var master_volume := 1.0
 var music_volume := 0.6
 var sfx_volume := 1.0
 var fullscreen := true
+var screen_shake := true
 
 
 func _ready() -> void:
@@ -62,6 +63,9 @@ func load_settings() -> void:
 	var fs = cfg.get_value("display", "fullscreen", fullscreen)
 	if fs is bool:
 		fullscreen = fs
+	var shake = cfg.get_value("display", "screen_shake", screen_shake)
+	if shake is bool:
+		screen_shake = shake
 
 
 func _get_number(cfg: ConfigFile, section: String, key: String, default: float) -> float:
@@ -77,6 +81,7 @@ func save_settings() -> void:
 	cfg.set_value("audio", "music", music_volume)
 	cfg.set_value("audio", "sfx", sfx_volume)
 	cfg.set_value("display", "fullscreen", fullscreen)
+	cfg.set_value("display", "screen_shake", screen_shake)
 	cfg.save(SETTINGS_PATH)
 
 

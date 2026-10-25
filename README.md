@@ -1,4 +1,4 @@
-# Pong (Godot 4.3)
+# Wong (Godot 4.3)
 
 Open this folder in Godot 4.3+ (project.godot) and press F5.
 
